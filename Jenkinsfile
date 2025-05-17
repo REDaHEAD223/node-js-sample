@@ -1,46 +1,42 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18'
-            args '-u root'
-        }
-    }
+    agent none
 
     environment {
-        APP_NAME = "myapp"
         GIT_REPO = "https://github.com/REDaHEAD223/node-js-sample.git"
         OC_SERVER = "https://api.rm3.7wse.p1.openshiftapps.com:6443"
-        OC_TOKEN = credentials('openshift-token') // Jenkins Credentials
         PROJECT = "redahead223-dev"
+        APP_NAME = "myapp"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout + Node Build') {
+            agent {
+                docker {
+                    image 'node:18'
+                    args '-u root'
+                }
+            }
             steps {
                 git url: "${GIT_REPO}", branch: 'master'
-            }
-        }
 
-        stage('Install dependencies') {
-            steps {
+                echo "📦 Installing dependencies"
                 sh 'npm install'
+
+                echo "🧪 Running tests (optional)"
+                sh 'npm test || true'
             }
         }
 
-        stage('Test') {
-            steps {
-                sh 'npm test || true' // если нет тестов, не ломаем pipeline
+        stage('Deploy to OpenShift') {
+            agent any
+            environment {
+                OC_TOKEN = credentials('openshift-token')
             }
-        }
-
-        stage('Login to OpenShift') {
             steps {
+                echo "🔐 Logging into OpenShift"
                 sh "oc login --token=${OC_TOKEN} --server=${OC_SERVER}"
-            }
-        }
 
-        stage('Start Build') {
-            steps {
+                echo "🚀 Triggering OpenShift build"
                 sh "oc start-build ${APP_NAME} --follow -n ${PROJECT}"
             }
         }
