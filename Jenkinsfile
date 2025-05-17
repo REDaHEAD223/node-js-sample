@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18'
+            args '-u root'
+        }
+    }
 
     environment {
         APP_NAME = "myapp"
