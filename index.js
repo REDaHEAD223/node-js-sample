@@ -1,19 +1,6 @@
 var express = require('express')
 var app = express()
 
-function stressCPU(durationMs) {
-  const end = Date.now() + durationMs;
-  while (Date.now() < end) {
-    // Бесконечный цикл до конца duration
-    Math.sqrt(Math.random());
-  }
-}
-
-setInterval(() => {
-  stressCPU(3000); // каждые 5 сек даёт 3 сек CPU-нагрузки
-}, 5000);
-
-
 var port = process.env.APP_PORT || 5000
 app.set('port', port)
 
