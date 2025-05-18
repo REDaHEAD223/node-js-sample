@@ -6,6 +6,7 @@ pipeline {
         OC_SERVER = "https://api.rm3.7wse.p1.openshiftapps.com:6443"
         PROJECT = "redahead223-dev"
         APP_NAME = "myapp"
+        RUN_TESTS = "true"
     }
 
     stages {
@@ -22,12 +23,23 @@ pipeline {
                 echo "📦 Installing dependencies"
                 sh 'npm install'
 
-                echo "🧪 Running tests (optional)"
-                sh 'npm test || true'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    echo "🧪 Running tests"
+                    sh 'npm test'
+                }
+            }
+
+            post {
+                always {
+                    echo "📦 Stage completed"
+                }
             }
         }
 
         stage('Deploy to OpenShift') {
+            when {
+                expression { return env.RUN_TESTS == 'true' }
+            }
             agent any
             environment {
                 OC_TOKEN = credentials('openshift-token')
