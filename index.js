@@ -7,7 +7,7 @@ app.set('port', port)
 app.use(express.static(__dirname + '/public'))
 
 app.get('/', function(request, response) {
-  response.send(`Hello from ззode.js app in OpenShift!\nAPI_KEY: ${process.env.API_KEY1}`)
+  response.send(`Hello from ззode.js app in OpenShift!\nAPI_KEY: ${process.env.API_KEY}`)
 })
 
 app.listen(app.get('port'), function() {
